@@ -3,61 +3,138 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Μετροπόντικας — H / Cl / HCl v73 no excitation text</title>
+<title>Μετροπόντικας Χημείας — v76 mouse pause + thermometers</title>
 <style>
-html,body{margin:0;background:#f4f7fb;color:#17202b;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
-.wrap{max-width:1220px;margin:0 auto;padding:16px}
-.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:0 0 12px}
-button,label,select{font-size:13px}
-button{border:1px solid #b9c6d5;background:#fff;padding:8px 11px;border-radius:10px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06)}
-button:hover{background:#eef5ff}
-.control{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #d5deea;border-radius:10px;padding:6px 9px}
-select{border:1px solid #cbd5e1;border-radius:8px;padding:4px 6px;background:#fff}
-input[type=range]{width:105px}
-.readout{background:#fff;border:1px solid #d5deea;border-radius:10px;padding:7px 10px;font-size:12.5px;color:#334155;min-width:760px;line-height:1.35}
-canvas{display:block;width:100%;height:auto;background:#eef4fb;border:1px solid #c8d4e3;border-radius:18px;box-shadow:0 8px 24px rgba(30,45,65,.14);cursor:default;touch-action:none}
-.note{margin-top:10px;font-size:13px;line-height:1.42;color:#435166}
-.badge{display:inline-block;padding:2px 7px;border-radius:999px;background:#eaf2ff;border:1px solid #c7d9f2;color:#20405f;font-size:12px;margin-right:6px}
+:root{
+  --bg:#0b0f14; --panel:#111822; --text:#e8eef7; --muted:#9aa8bc;
+  --cardBorder:rgba(255,255,255,.08);
+  --topBg:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0)), var(--panel);
+  --cardBg:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0)), var(--panel);
+  --buttonBg:rgba(255,255,255,.06); --buttonHover:rgba(255,255,255,.10);
+  --accent:#4fa8d8; --accentSoft:rgba(79,168,216,.18);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overflow:hidden}
+body[data-theme="paper"]{
+  --bg:#ffffff; --panel:#f1ece2; --text:#0f1820; --muted:#42505c;
+  --cardBorder:rgba(24,34,44,.20); --topBg:linear-gradient(180deg,rgba(255,255,255,1),rgba(255,255,255,.76)), var(--panel);
+  --cardBg:linear-gradient(180deg,rgba(255,255,255,1),rgba(255,255,255,.58)), var(--panel);
+  --buttonBg:rgba(15,24,32,.045); --buttonHover:rgba(15,24,32,.085); --accent:#2563eb; --accentSoft:rgba(37,99,235,.12);
+}
+.app{display:grid;grid-template-rows:auto 1fr;height:100dvh;min-height:100dvh;background:var(--bg)}
+.top{padding:6px 10px;background:var(--topBg);border-bottom:1px solid var(--cardBorder);display:flex;justify-content:center;align-items:center;z-index:10}
+.titleBar{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-width:0}
+.title{font-size:18px;font-weight:800;display:flex;align-items:baseline;justify-content:center;gap:10px;text-align:center;min-width:0;white-space:nowrap}
+.sub{color:var(--muted);font-size:11px;font-weight:600;white-space:nowrap}
+.langSwitch,.regionSwitch{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.langBtn,.regionBtn,.sceneBtn,button{border:1px solid rgba(255,255,255,.14);background:var(--buttonBg);color:var(--text);padding:4px 7px;border-radius:8px;cursor:pointer;font-size:11px;line-height:1.1;font-weight:700;box-shadow:none}
+body[data-theme="paper"] .langBtn,body[data-theme="paper"] .regionBtn,body[data-theme="paper"] .sceneBtn,body[data-theme="paper"] button{border-color:rgba(15,24,32,.18)}
+.langBtn.active,.regionBtn.active,.sceneBtn.active,.toggleBtn.active,.themeBtn.active{background:var(--accentSoft)!important;border-color:rgba(79,168,216,.42)!important;color:var(--text);font-weight:800}
+button:hover{background:var(--buttonHover)}
+.regionBtn{min-width:74px}
+.main{position:relative;min-height:0;padding:2px;overflow:hidden}
+.card.viewport{position:relative;height:100%;min-height:0;background:var(--cardBg);border:1px solid var(--cardBorder);border-radius:14px;overflow:hidden}
+#sim{position:absolute;inset:0;width:100%;height:100%;display:block;background:var(--bg);cursor:pointer;touch-action:none}
+.chemHud{position:absolute;left:6px;bottom:6px;z-index:30;display:flex;flex-direction:column;gap:4px;width:min(430px,34vw);max-height:calc(100% - 12px);pointer-events:none}
+.hudGroup{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:5px;border:1px solid rgba(255,255,255,.10);border-radius:10px;background:rgba(10,14,20,.46);backdrop-filter:blur(4px);pointer-events:auto}
+body[data-theme="paper"] .hudGroup{background:rgba(255,255,255,.76);border-color:rgba(24,34,44,.16)}
+.hudGroup.compact{padding:4px}.hudLabel{font-size:10.5px;color:var(--muted);font-weight:800;margin-right:2px}.sceneGroup{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.control{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);border-radius:8px;padding:3px 5px;color:var(--text)}
+body[data-theme="paper"] .control{background:rgba(15,24,32,.035);border-color:rgba(15,24,32,.12)}
+.control label{font-size:10.5px;color:var(--muted);font-weight:700}.control span{font-size:10.5px;font-weight:800;color:var(--text)}
+select{max-width:135px;background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:3px 5px;font-size:11px}body[data-theme="paper"] select{background:#fff;color:#0f1820;border-color:rgba(15,24,32,.18)}
+input[type="range"]{width:82px}.readout{position:absolute;right:7px;bottom:7px;z-index:25;background:rgba(10,14,20,.58);border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:7px 9px;font-size:11.5px;color:var(--text);line-height:1.32;width:min(600px,48vw);backdrop-filter:blur(4px)}
+body[data-theme="paper"] .readout{background:rgba(255,255,255,.80);border-color:rgba(24,34,44,.15);color:#0f1820}.bookUrl{position:absolute;left:8px;right:8px;top:8px;z-index:35;display:none;gap:6px;align-items:center;padding:6px;border:1px solid var(--cardBorder);border-radius:10px;background:rgba(10,14,20,.72);backdrop-filter:blur(4px)}
+.bookUrl input{flex:1;min-width:0;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:var(--text);border-radius:8px;padding:5px 7px;font-size:11px}.bookUrl.show{display:flex}body[data-theme="paper"] .bookUrl{background:rgba(255,255,255,.90)}body[data-theme="paper"] .bookUrl input{background:#fff;color:#0f1820;border-color:rgba(15,24,32,.18)}
+.note{display:none}.badge{display:inline-block;padding:2px 7px;border-radius:999px;background:var(--accentSoft);border:1px solid rgba(79,168,216,.28);color:var(--text);font-size:11px;margin-right:6px}.hiddenNative{display:none!important}
+body.book-mode .top, body.book-mode .chemHud, body.book-mode .bookUrl{display:none!important}body.book-mode .main{padding:0}body.book-mode .card.viewport{border:none;border-radius:0}body.book-mode .readout{right:8px;bottom:8px;width:min(460px,50vw);opacity:.86}body.book-mode #sim{border-radius:0}
+@media(max-width:980px){html,body{overflow:auto}.app{height:auto;min-height:100dvh}.main{height:82vh;min-height:620px}.chemHud{width:min(96vw,430px);left:6px;right:6px;bottom:6px}.readout{left:6px;right:6px;bottom:auto;top:6px;width:auto}.title{font-size:15px}.regionSwitch{display:none}}
+@media(max-width:640px){.main{height:88vh}.chemHud{width:auto}.hudGroup{gap:3px}.sceneBtn,button{font-size:10px;padding:4px 6px}.control{padding:2px 4px}input[type="range"]{width:64px}.readout{font-size:10.5px}.title{font-size:13px}.sub{display:none}}
 </style>
 </head>
-<body>
-<div class="wrap">
-  <div class="toolbar">
-    <button id="toggle">Παύση</button>
-    <button id="step">Βήμα</button>
-    <button id="reset">Επανεκκίνηση / εφαρμογή</button>
-    <button id="snapshot">Λήψη PNG</button>
-
-    <span class="control"><label for="mode">Σύστημα</label>
-      <select id="mode">
-        <option value="HH" selected>H ⇄ H₂</option>
-        <option value="ClCl">Cl ⇄ Cl₂</option>
-        <option value="Mix">H₂ / Cl₂ / HCl</option>
-      </select>
-    </span>
-    <span class="control"><label for="temperature">T αρχ.</label><input id="temperature" type="range" min="0.20" max="3.00" step="0.01" value="0.95"><span id="tempVal">0.95</span></span>
-    <span class="control"><label for="systemMode">Σύστημα</label>
-      <select id="systemMode">
-        <option value="closed" selected>κλειστό</option>
-        <option value="thermal">περιβάλλον</option>
-      </select>
-    </span>
-    <span class="control"><label for="envT">T περιβ.</label><input id="envT" type="range" min="0.20" max="3.00" step="0.01" value="0.95"><span id="envVal">0.95</span></span>
-    <span class="control"><label for="initialMolecules">Μόρια</label><input id="initialMolecules" type="range" min="0" max="100" step="5" value="55"><span id="molVal">55%</span></span>
-    <span class="control"><label for="speed">Ταχύτητα</label><input id="speed" type="range" min="1" max="280" step="1" value="72"><span id="speedVal">72</span></span>
-    <span class="control"><label><input id="showCandidates" type="checkbox" checked> υποψ. κρούσεις</label></span>
-
-    <span id="readout" class="readout">—</span>
+<body data-theme="screen">
+<div class="app">
+  <div class="top">
+    <div class="titleBar">
+      <div class="langSwitch" aria-label="Language selector">
+        <button id="langEl" class="langBtn active" type="button">EL</button>
+        <button id="langEn" class="langBtn" type="button">EN</button>
+      </div>
+      <div class="regionSwitch" aria-label="Scene selector">
+        <button class="regionBtn" data-scene="nascentH" type="button">Η εν τω γεννάσθαι</button>
+        <button class="regionBtn" data-scene="h2Closed" type="button">H⇄H₂</button>
+        <button class="regionBtn" data-scene="cl2Closed" type="button">Cl⇄Cl₂</button>
+        <button class="regionBtn" data-scene="mixHCl" type="button">HCl</button>
+      </div>
+      <div class="title"><span>Μετροπόντικας της Χημείας</span><span class="sub">© antarxo, 2026</span></div>
+    </div>
   </div>
+  <div class="main">
+    <div class="card viewport">
+      <canvas id="sim" width="1500" height="850"></canvas>
+      <div class="bookUrl" id="bookUrlBox"><span class="hudLabel">Παραπομπή</span><input id="bookUrl" readonly><button id="hideBookUrl" type="button">×</button></div>
 
-  <canvas id="sim" width="1500" height="850"></canvas>
+      <div class="chemHud">
+        <div class="hudGroup compact">
+          <span class="hudLabel">Σκηνές</span>
+          <div class="sceneGroup" id="sceneButtons">
+            <button class="sceneBtn" data-scene="nascentH">Η εν τω γεννάσθαι</button>
+            <button class="sceneBtn" data-scene="h2Closed">H ⇄ H₂</button>
+            <button class="sceneBtn" data-scene="cl2Closed">Cl ⇄ Cl₂</button>
+            <button class="sceneBtn" data-scene="mixHCl">H₂ / Cl₂ / HCl</button>
+            <button class="sceneBtn" data-scene="hotBreak">Υψηλή T</button>
+            <button class="sceneBtn" data-scene="thermalWall">Περιβάλλον</button>
+          </div>
+        </div>
 
-  <div class="note">
-    <span class="badge">v73</span>
-    Δοκιμή καθαρής 2D βιβλιακής θέασης. Δεν υπάρχει z και δεν υπάρχει 2.5D: ό,τι φαίνεται κοντά στην οθόνη είναι όντως κοντά στο μοντέλο.
-    Στη v73 παραμένει το ενεργειακό audit και η καθαρή οπτική ένδειξη διεγερμένων μορίων, αλλά αφαιρείται η γραπτή ετικέτα «διέγερση» από τη σκηνή.
+        <div class="hudGroup compact">
+          <span class="hudLabel">Χειρισμός</span>
+          <button id="toggle">Παύση</button>
+          <button id="step">Βήμα</button>
+          <button id="reset">Reset</button>
+          <button id="snapshot">PNG</button>
+          <button id="screenBtn" class="themeBtn active">Οθόνη</button>
+          <button id="paperBtn" class="themeBtn">Χαρτί</button>
+          <button id="bookBtn">Βιβλίο</button>
+          <button id="copyBookLink">Παραπομπή</button>
+        </div>
+
+        <div class="hudGroup compact">
+          <span class="hudLabel">Ρυθμίσεις</span>
+          <span class="control"><label for="mode">μίγμα</label>
+            <select id="mode">
+              <option value="HH" selected>H ⇄ H₂</option>
+              <option value="ClCl">Cl ⇄ Cl₂</option>
+              <option value="Mix">H₂ / Cl₂ / HCl</option>
+            </select>
+          </span>
+          <span class="control"><label for="temperature">T αρχ.</label><input id="temperature" type="range" min="0.20" max="3.00" step="0.01" value="0.95"><span id="tempVal">0.95</span></span>
+          <span class="control"><label for="systemMode">σύστημα</label>
+            <select id="systemMode">
+              <option value="closed" selected>κλειστό</option>
+              <option value="thermal">περιβάλλον</option>
+            </select>
+          </span>
+          <span class="control"><label for="envT">T περ.</label><input id="envT" type="range" min="0.20" max="3.00" step="0.01" value="0.95"><span id="envVal">0.95</span></span>
+          <span class="control"><label for="initialMolecules">μόρια</label><input id="initialMolecules" type="range" min="0" max="100" step="5" value="55"><span id="molVal">55%</span></span>
+          <span class="control"><label for="speed">ταχ.</label><input id="speed" type="range" min="1" max="280" step="1" value="72"><span id="speedVal">72</span></span>
+          <span class="control"><label><input id="showCandidates" type="checkbox" checked> υποψ.</label></span>
+        </div>
+
+        <div class="hudGroup compact">
+          <span class="hudLabel">Εμφάνιση</span>
+          <button class="sceneBtn toggleBtn active" id="togglePanel">ταμείο</button>
+          <button class="sceneBtn toggleBtn active" id="toggleThermometers">θερμόμετρα</button>
+          <button class="sceneBtn toggleBtn active" id="toggleLegend">κλίμακες</button>
+          <button class="sceneBtn toggleBtn active" id="toggleVelocity">ταχύτητες</button>
+          <button class="sceneBtn toggleBtn active" id="toggleEvents">συμβάντα</button>
+        </div>
+      </div>
+
+      <span id="readout" class="readout">—</span>
+    </div>
   </div>
 </div>
+<div class="note"><span class="badge">v76</span> Περιβάλλον τύπου ΗΜ κύματος με click για έναρξη/παύση, θερμόμετρα Tsys/Tenv και πρόχειρη αντιστοίχιση θερμοκρασίας σε Kelvin υπό βαθμονόμηση.</div>
 
 <script>
 (() => {
@@ -71,6 +148,15 @@ const ui={
   step:document.getElementById("step"),
   reset:document.getElementById("reset"),
   snapshot:document.getElementById("snapshot"),
+  screenBtn:document.getElementById("screenBtn"),
+  paperBtn:document.getElementById("paperBtn"),
+  bookBtn:document.getElementById("bookBtn"),
+  copyBookLink:document.getElementById("copyBookLink"),
+  bookUrlBox:document.getElementById("bookUrlBox"),
+  bookUrl:document.getElementById("bookUrl"),
+  hideBookUrl:document.getElementById("hideBookUrl"),
+  langEl:document.getElementById("langEl"),
+  langEn:document.getElementById("langEn"),
   mode:document.getElementById("mode"),
   temperature:document.getElementById("temperature"),
   tempVal:document.getElementById("tempVal"),
@@ -82,12 +168,77 @@ const ui={
   speed:document.getElementById("speed"),
   speedVal:document.getElementById("speedVal"),
   showCandidates:document.getElementById("showCandidates"),
+  togglePanel:document.getElementById("togglePanel"),
+  toggleThermometers:document.getElementById("toggleThermometers"),
+  toggleLegend:document.getElementById("toggleLegend"),
+  toggleVelocity:document.getElementById("toggleVelocity"),
+  toggleEvents:document.getElementById("toggleEvents"),
+  sceneButtons:document.getElementById("sceneButtons"),
   readout:document.getElementById("readout")
 };
 
 const W=canvas.width,H=canvas.height;
 const box={w:345,h:215};
 const view={cx:W*0.50,cy:H*0.53,scale:1.78};
+
+const THEMES={
+  screen:{
+    name:"screen", bg0:"#0b0f14", bg1:"#111822", boxFill:"rgba(15,23,42,0.70)", boxInner0:"rgba(255,255,255,0.055)", boxInner1:"rgba(79,168,216,0.08)", boxStroke:"rgba(232,238,247,0.34)", text:"rgba(232,238,247,0.86)", muted:"rgba(154,168,188,0.72)", panelBg:"rgba(17,24,39,0.84)", panelStroke:"rgba(255,255,255,0.13)", panelText:"rgba(232,238,247,0.90)", panelMuted:"rgba(154,168,188,0.78)", candidate:"rgba(245,158,11,"
+  },
+  paper:{
+    name:"paper", bg0:"#ffffff", bg1:"#f4efe7", boxFill:"rgba(255,255,255,0.72)", boxInner0:"rgba(255,255,255,0.40)", boxInner1:"rgba(147,197,253,0.10)", boxStroke:"rgba(24,34,44,0.64)", text:"rgba(15,24,32,0.86)", muted:"rgba(66,80,92,0.72)", panelBg:"rgba(255,255,255,0.86)", panelStroke:"rgba(24,34,44,0.16)", panelText:"rgba(15,24,32,0.92)", panelMuted:"rgba(66,80,92,0.76)", candidate:"rgba(217,119,6,"
+  }
+};
+let themeMode="screen";
+let bookMode=false;
+function theme(){return THEMES[themeMode]||THEMES.screen;}
+function setThemeMode(mode){
+  themeMode=mode==="paper"?"paper":"screen";
+  document.body.dataset.theme=themeMode;
+  ui.screenBtn?.classList.toggle("active",themeMode==="screen");
+  ui.paperBtn?.classList.toggle("active",themeMode==="paper");
+  updateBookUrlField();
+  draw();
+}
+function setBookMode(on){
+  bookMode=!!on;
+  document.body.classList.toggle("book-mode",bookMode);
+  ui.bookBtn?.classList.toggle("active",bookMode);
+  updateBookUrlField();
+  draw();
+}
+function buildBookUrl(){
+  const url=new URL(window.location.href);
+  url.search="";
+  url.searchParams.set("scene",activeSceneKey||"h2Closed");
+  url.searchParams.set("theme",themeMode);
+  url.searchParams.set("book",bookMode?"1":"0");
+  url.searchParams.set("panel",viewOptions.panel?"1":"0");
+  url.searchParams.set("thermometers",viewOptions.thermometers?"1":"0");
+  url.searchParams.set("legend",viewOptions.legend?"1":"0");
+  url.searchParams.set("velocity",viewOptions.velocity?"1":"0");
+  url.searchParams.set("events",viewOptions.events?"1":"0");
+  url.searchParams.set("candidates",ui.showCandidates?.checked?"1":"0");
+  return url.toString();
+}
+function updateBookUrlField(){ if(ui.bookUrl) ui.bookUrl.value=buildBookUrl(); }
+function boolParam(v,def){ if(v===null)return def; return ["1","true","yes","on"].includes(String(v).toLowerCase()); }
+function applyQueryState(){
+  const p=new URLSearchParams(window.location.search);
+  const scene=p.get("scene");
+  if(scene&&SCENES[scene])applyScene(scene);
+  setThemeMode(p.get("theme")==="paper"?"paper":"screen");
+  viewOptions.panel=boolParam(p.get("panel"),viewOptions.panel);
+  viewOptions.thermometers=boolParam(p.get("thermometers"),viewOptions.thermometers);
+  viewOptions.legend=boolParam(p.get("legend"),viewOptions.legend);
+  viewOptions.velocity=boolParam(p.get("velocity"),viewOptions.velocity);
+  viewOptions.events=boolParam(p.get("events"),viewOptions.events);
+  if(p.has("candidates"))ui.showCandidates.checked=boolParam(p.get("candidates"),ui.showCandidates.checked);
+  refreshToggleButtons();
+  setBookMode(boolParam(p.get("book"),false));
+  updateBookUrlField();
+}
+
 
 const CL_CORE_PX=2.25;
 const H_CORE_PX=0.68; // μικρότερος πυρήνας H, και ανάλογα μικρότερος Cl // πυρηνική ακτίνα ~ A^(1/3), όχι 1/35 σε ακτίνα
@@ -102,8 +253,8 @@ const ELEMENTS={
     cloudRadius:5.3,
     corePx:H_CORE_PX,
     polarizability:0.14,
-    cloudCore:[219,234,254],
-    cloudEdge:[96,165,250],
+    cloudCore:[191,219,254],
+    cloudEdge:[37,99,235],
     coreColor:"#1e3a8a"
   },
   Cl:{
@@ -136,6 +287,90 @@ let stats={collisions:0,candidates:0,stars:0,formed:0,broken:0,failed:0,wallHits
 let E0=0;
 let Qwall=0;
 const dt=0.030;
+
+const viewOptions={
+  panel:true,
+  thermometers:true,
+  legend:true,
+  velocity:true,
+  events:true
+};
+
+const TEMP_KELVIN_PER_MODEL_UNIT = 1000; // προσωρινή βαθμονόμηση: Tmodel=1 ↔ περίπου 1000 K, όχι ακόμα τελική φυσική κλίμακα
+function modelTempToKelvin(T){
+  return T * TEMP_KELVIN_PER_MODEL_UNIT;
+}
+
+let activeSceneKey="h2Closed";
+
+const SCENES={
+  nascentH:{
+    label:"Η εν τω γεννάσθαι",
+    mode:"HH",
+    T:1.55,
+    envT:1.55,
+    molecules:0,
+    systemMode:"closed",
+    speed:80,
+    candidates:true,
+    note:"Πολλά ελεύθερα άτομα H: ελαφριά, γρήγορα, συχνές βίαιες συγκρούσεις."
+  },
+  h2Closed:{
+    label:"H ⇄ H₂",
+    mode:"HH",
+    T:0.95,
+    envT:0.95,
+    molecules:55,
+    systemMode:"closed",
+    speed:72,
+    candidates:true,
+    note:"Κλειστό δοχείο H/H₂: δεσμοί, διεγέρσεις, σπασίματα και ενεργειακό ταμείο."
+  },
+  cl2Closed:{
+    label:"Cl ⇄ Cl₂",
+    mode:"ClCl",
+    T:1.05,
+    envT:1.05,
+    molecules:55,
+    systemMode:"closed",
+    speed:78,
+    candidates:true,
+    note:"Βαρύτερο χλώριο: πιο αργή κίνηση, μεγαλύτερο και πιο πολώσιμο νέφος."
+  },
+  mixHCl:{
+    label:"H₂ / Cl₂ / HCl",
+    mode:"Mix",
+    T:1.10,
+    envT:1.10,
+    molecules:48,
+    systemMode:"closed",
+    speed:74,
+    candidates:true,
+    note:"Μικτό δοχείο: H₂, Cl₂, HCl και ελεύθερα H/Cl μέσα στο ίδιο σφυροκόπημα."
+  },
+  hotBreak:{
+    label:"Υψηλή T / σπάσιμο",
+    mode:"Mix",
+    T:2.25,
+    envT:2.25,
+    molecules:55,
+    systemMode:"closed",
+    speed:92,
+    candidates:true,
+    note:"Υψηλότερη θερμοκρασία: περισσότερες βίαιες κρούσεις και εντονότερες διεγέρσεις/διασπάσεις."
+  },
+  thermalWall:{
+    label:"Περιβάλλον / τοίχωμα",
+    mode:"Mix",
+    T:1.85,
+    envT:0.75,
+    molecules:48,
+    systemMode:"thermal",
+    speed:82,
+    candidates:true,
+    note:"Θερμοστατούμενο τοίχωμα: Tsys τείνει προς Tenv και το Qwall γράφει την ανταλλαγή."
+  }
+};
 
 function rand(a,b){return a+Math.random()*(b-a)}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
@@ -539,6 +774,7 @@ function drawCore(a,p){
   if(rr>0.9)ctx.stroke();
 }
 function drawVelocity(a,p){
+  if(!viewOptions.velocity)return;
   const sp=norm(a.vx,a.vy);
   if(sp<0.18)return;
   ctx.strokeStyle="rgba(51,65,85,0.16)";
@@ -683,7 +919,7 @@ function drawCandidates(){
       if(d<thr){
         const pa=project(a.x,a.y),pb=project(b.x,b.y);
         const t=1-d/thr;
-        ctx.strokeStyle=`rgba(245,158,11,${0.18+0.40*t})`;
+        ctx.strokeStyle=`${theme().candidate}${0.18+0.40*t})`;
         ctx.lineWidth=1.5+2.0*t;
         ctx.setLineDash([5,5]);
         ctx.beginPath();ctx.moveTo(pa.sx,pa.sy);ctx.lineTo(pb.sx,pb.sy);ctx.stroke();
@@ -715,36 +951,129 @@ function roundedRect(x,y,w,h,r,fill,stroke){
 }
 function drawContainer(){
   ctx.clearRect(0,0,W,H);
+  const th=theme();
   const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,"#f8fbff");bg.addColorStop(1,"#edf3fa");
+  bg.addColorStop(0,th.bg0);bg.addColorStop(1,th.bg1);
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
 
   const x=view.cx-box.w*view.scale/2,y=view.cy-box.h*view.scale/2,w=box.w*view.scale,h=box.h*view.scale;
-  ctx.fillStyle="rgba(239,246,255,0.56)";
-  ctx.strokeStyle="rgba(35,54,74,0.88)";
+  ctx.fillStyle=th.boxFill;
+  ctx.strokeStyle=th.boxStroke;
   ctx.lineWidth=3;
   roundedRect(x,y,w,h,14,true,true);
 
   const g=ctx.createLinearGradient(x,y,x+w,y+h);
-  g.addColorStop(0,"rgba(255,255,255,0.24)");
-  g.addColorStop(1,"rgba(147,197,253,0.10)");
+  g.addColorStop(0,th.boxInner0);
+  g.addColorStop(1,th.boxInner1);
   ctx.fillStyle=g;
   roundedRect(x+4,y+4,w-8,h-8,11,true,false);
 
   ctx.font="14px system-ui, sans-serif";
-  ctx.fillStyle="rgba(35,54,74,0.75)";
-  ctx.fillText(`${activeMode().title} — v73: ενέργεια + περιβάλλον`,70,48);
-  ctx.fillStyle="rgba(35,54,74,0.56)";
-  ctx.fillText("κλειστό ή περιβάλλον • K/Ubond/Esys/Qwall • εμφανείς διεγέρσεις • χωρίς 2.5D",70,70);
+  ctx.fillStyle=th.text;
+  ctx.fillText(`${activeMode().title} — v76: click παύση + θερμόμετρα`,70,48);
+  ctx.fillStyle=th.muted;
+  ctx.fillText("click στη σκηνή: έναρξη/παύση • θερμόμετρα • Οθόνη/Χαρτί • K/Ubond/Esys/Qwall",70,70);
 }
-function drawLegend(){
-  const x=W-340,y=92,w=268,h=128;
-  ctx.fillStyle="rgba(255,255,255,0.80)";
-  ctx.strokeStyle="rgba(148,163,184,0.50)";
+
+function drawThermometers(){
+  const th=theme();
+  const Tsys=gasTemperature();
+  const Tenv=Number(ui.envT.value);
+  const thermalMode=ui.systemMode.value==="thermal";
+
+  const x=W-340;
+  const y=230;
+  const w=268;
+  const h=164;
+
+  ctx.fillStyle=th.panelBg;
+  ctx.strokeStyle=th.panelStroke;
+  ctx.lineWidth=1;
   roundedRect(x,y,w,h,13,true,true);
-  ctx.font="bold 13px system-ui, sans-serif";ctx.fillStyle="#1f2937";
-  ctx.fillText("Κλίμακες v73",x+13,y+21);
-  ctx.font="12px system-ui, sans-serif";ctx.fillStyle="#334155";
+
+  ctx.font="bold 13px system-ui, sans-serif";
+  ctx.fillStyle=th.panelText;
+  ctx.fillText("Θερμόμετρα",x+13,y+21);
+
+  ctx.font="10.5px system-ui, sans-serif";
+  ctx.fillStyle=th.panelMuted;
+  ctx.fillText("K ≈ 1000·Tmodel — προσωρινή βαθμονόμηση",x+13,y+38);
+
+  drawOneThermometer(x+42,y+62,Tsys,"σύστημα",true);
+  drawOneThermometer(x+154,y+62,Tenv,thermalMode ? "περιβάλλον" : "T αναφοράς",thermalMode);
+}
+
+function drawOneThermometer(x,y,T,label,active=true){
+  const th=theme();
+  const tubeH=76;
+  const tubeW=16;
+  const bulbR=13;
+  const Tmin=0.20;
+  const Tmax=3.00;
+  const fill=clamp((T-Tmin)/(Tmax-Tmin),0,1);
+  const mercuryH=tubeH*fill;
+  const alpha=active?1:0.48;
+
+  ctx.save();
+  ctx.globalAlpha=alpha;
+
+  ctx.strokeStyle=themeMode==="paper" ? "rgba(24,34,44,0.66)" : "rgba(232,238,247,0.66)";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.roundRect(x,y,tubeW,tubeH,8);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(x+tubeW/2,y+tubeH+bulbR-2,bulbR,0,Math.PI*2);
+  ctx.stroke();
+
+  const grad=ctx.createLinearGradient(0,y+tubeH,0,y);
+  grad.addColorStop(0,"rgba(245,158,11,0.96)");
+  grad.addColorStop(0.58,"rgba(249,115,22,0.96)");
+  grad.addColorStop(1,"rgba(239,68,68,0.96)");
+  ctx.fillStyle=grad;
+
+  ctx.beginPath();
+  ctx.roundRect(x+3,y+tubeH-mercuryH,tubeW-6,mercuryH,5);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(x+tubeW/2,y+tubeH+bulbR-2,bulbR-4,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.strokeStyle=themeMode==="paper" ? "rgba(66,80,92,0.44)" : "rgba(154,168,188,0.48)";
+  ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const yy=y+tubeH-i*tubeH/4;
+    ctx.beginPath();
+    ctx.moveTo(x+tubeW+4,yy);
+    ctx.lineTo(x+tubeW+12,yy);
+    ctx.stroke();
+  }
+
+  ctx.font="11px system-ui, sans-serif";
+  ctx.fillStyle=th.panelMuted;
+  ctx.fillText(label,x-14,y+tubeH+33);
+
+  ctx.font="bold 12px system-ui, sans-serif";
+  ctx.fillStyle=th.panelText;
+  ctx.fillText(T.toFixed(2),x-6,y-9);
+
+  ctx.font="10px system-ui, sans-serif";
+  ctx.fillStyle=th.panelMuted;
+  ctx.fillText("≈"+Math.round(modelTempToKelvin(T))+" K",x-14,y-22);
+  ctx.restore();
+}
+
+function drawLegend(){
+  const th=theme();
+  const x=W-340,y=92,w=268,h=128;
+  ctx.fillStyle=th.panelBg;
+  ctx.strokeStyle=th.panelStroke;
+  roundedRect(x,y,w,h,13,true,true);
+  ctx.font="bold 13px system-ui, sans-serif";ctx.fillStyle=th.panelText;
+  ctx.fillText("Κλίμακες v76",x+13,y+21);
+  ctx.font="12px system-ui, sans-serif";ctx.fillStyle=th.panelMuted;
   ctx.fillText("H: μικρό νέφος, πιο καθαρό χρώμα",x+13,y+44);
   ctx.fillText("Cl: μεγαλύτερο νέφος, ίδια κλίμακα",x+13,y+63);
   ctx.fillText("μικρότεροι πυρήνες H και Cl",x+13,y+82);
@@ -752,24 +1081,25 @@ function drawLegend(){
   ctx.fillText("audit: K + Ubond + Qwall",x+13,y+120);
 }
 function drawPanel(){
+  const th=theme();
   const c=counts(),T=gasTemperature(),en=totalEnergy(),dr=energyDrift();
   const x=72,y=92,w=390,h=146;
-  ctx.fillStyle="rgba(255,255,255,0.82)";
-  ctx.strokeStyle="rgba(148,163,184,0.55)";
+  ctx.fillStyle=th.panelBg;
+  ctx.strokeStyle=th.panelStroke;
   ctx.lineWidth=1;
   roundedRect(x,y,w,h,13,true,true);
-  ctx.font="bold 13px system-ui, sans-serif";ctx.fillStyle="#1f2937";
+  ctx.font="bold 13px system-ui, sans-serif";ctx.fillStyle=th.panelText;
   ctx.fillText("Πληθυσμοί / κρούσεις",x+13,y+20);
-  ctx.font="12px system-ui, sans-serif";ctx.fillStyle="#334155";
+  ctx.font="12px system-ui, sans-serif";ctx.fillStyle=th.panelMuted;
   ctx.fillText(`H:${c.freeH}  Cl:${c.freeCl}  H₂:${c.H2}  Cl₂:${c.Cl2}  HCl:${c.HCl}  *:${c.stars}`,x+13,y+45);
-  ctx.fillText(`Tsys:${T.toFixed(2)}   K:${en.K.toFixed(1)}   Ubond:${en.U.toFixed(1)}   Esys:${en.E.toFixed(1)}`,x+13,y+66);
+  ctx.fillText(`Tsys:${T.toFixed(2)} ≈${Math.round(modelTempToKelvin(T))}K   K:${en.K.toFixed(1)}   Ubond:${en.U.toFixed(1)}   Esys:${en.E.toFixed(1)}`,x+13,y+66);
   if(ui.systemMode.value==="closed"){
     ctx.fillText(`κλειστό: ΔE=${dr.closed.toFixed(2)}%   wall:${stats.wallHits}`,x+13,y+87);
   }else{
     ctx.fillText(`περιβάλλον: Tenv:${Number(ui.envT.value).toFixed(2)}   Qwall:${Qwall.toFixed(1)}   Δ(E-Q)=${dr.thermal.toFixed(2)}%`,x+13,y+87);
   }
   ctx.fillText(`κρούσεις:${stats.collisions}   υποψ:${stats.candidates}   σχημ:${stats.formed}   σπασ:${stats.broken}   διεγ:${stats.excitedHits}`,x+13,y+108);
-  ctx.fillText(`mode: ${activeMode().title}`,x+13,y+128);
+  ctx.fillText(`σκηνή: ${(SCENES[activeSceneKey]&&SCENES[activeSceneKey].label)||activeMode().title}`,x+13,y+128);
 }
 
 function draw(){
@@ -787,9 +1117,45 @@ function draw(){
     else drawFreeAtom(d.a);
   }
   drawCandidates();
-  drawEvents();
-  drawPanel();
-  drawLegend();
+  if(viewOptions.events)drawEvents();
+  if(viewOptions.panel)drawPanel();
+  if(viewOptions.thermometers)drawThermometers();
+  if(viewOptions.legend)drawLegend();
+}
+
+function setButtonActive(btn,on){
+  btn.classList.toggle("active",!!on);
+}
+function refreshToggleButtons(){
+  setButtonActive(ui.togglePanel,viewOptions.panel);
+  setButtonActive(ui.toggleThermometers,viewOptions.thermometers);
+  setButtonActive(ui.toggleLegend,viewOptions.legend);
+  setButtonActive(ui.toggleVelocity,viewOptions.velocity);
+  setButtonActive(ui.toggleEvents,viewOptions.events);
+}
+function refreshSceneButtons(){
+  const buttons=document.querySelectorAll("[data-scene]");
+  for(const btn of buttons){
+    btn.classList.toggle("active",btn.dataset.scene===activeSceneKey);
+  }
+  updateBookUrlField();
+}
+function applyScene(key){
+  const sc=SCENES[key]||SCENES.h2Closed;
+  activeSceneKey=key;
+  ui.mode.value=sc.mode;
+  ui.temperature.value=String(sc.T);
+  ui.envT.value=String(sc.envT);
+  ui.initialMolecules.value=String(sc.molecules);
+  ui.systemMode.value=sc.systemMode;
+  ui.speed.value=String(sc.speed);
+  ui.showCandidates.checked=!!sc.candidates;
+  refreshSceneButtons();
+  updateControlLabels();
+  reset();
+}
+function activeSceneNote(){
+  return (SCENES[activeSceneKey]&&SCENES[activeSceneKey].note)||"";
 }
 
 function updateControlLabels(){
@@ -805,8 +1171,9 @@ function updateReadout(){
     ? `κλειστό ΔE:${dr.closed.toFixed(2)}%`
     : `περιβάλλον Tenv:${Number(ui.envT.value).toFixed(2)} Qwall:${Qwall.toFixed(1)} Δ(E-Q):${dr.thermal.toFixed(2)}%`;
   ui.readout.innerHTML =
-    `${activeMode().title} &nbsp; ${audit} &nbsp; H:${c.freeH} Cl:${c.freeCl} H₂:${c.H2} Cl₂:${c.Cl2} HCl:${c.HCl} *:${c.stars} &nbsp; Tsys:${T.toFixed(2)}<br>`+
-    `K:${en.K.toFixed(1)} &nbsp; Ubond:${en.U.toFixed(1)} &nbsp; Esys:${en.E.toFixed(1)} &nbsp; collisions:${stats.collisions} &nbsp; candidate:${stats.candidates} &nbsp; formed:${stats.formed} &nbsp; broken:${stats.broken} &nbsp; excited:${stats.excitedHits}`;
+    `${activeMode().title} &nbsp; ${audit} &nbsp; H:${c.freeH} Cl:${c.freeCl} H₂:${c.H2} Cl₂:${c.Cl2} HCl:${c.HCl} *:${c.stars} &nbsp; Tsys:${T.toFixed(2)}≈${Math.round(modelTempToKelvin(T))}K<br>`+
+    `K:${en.K.toFixed(1)} &nbsp; Ubond:${en.U.toFixed(1)} &nbsp; Esys:${en.E.toFixed(1)} &nbsp; collisions:${stats.collisions} &nbsp; candidate:${stats.candidates} &nbsp; formed:${stats.formed} &nbsp; broken:${stats.broken} &nbsp; excited:${stats.excitedHits}<br>`+
+    `<span style="color:${theme().panelMuted}">${activeSceneNote()}</span>`;
 }
 
 function tick(){
@@ -819,9 +1186,18 @@ function tick(){
   draw();
   requestAnimationFrame(tick);
 }
+
+function setRunningState(on){
+  running=!!on;
+  ui.toggle.textContent=running?"Παύση":"Συνέχεια";
+}
+function toggleRunning(){
+  setRunningState(!running);
+}
+
 function snapshot(){
   const a=document.createElement("a");
-  a.download="metropontikas_H_Cl_HCl_v73_no_excitation_text.png";
+  a.download="metropontikas_H_Cl_HCl_v76_mouse_pause_thermometers.png";
   a.href=canvas.toDataURL("image/png");
   a.click();
 }
@@ -832,19 +1208,54 @@ canvas.addEventListener("wheel",(ev)=>{
   view.scale=clamp(view.scale*factor,1.10,2.75);
 },{passive:false});
 
-ui.toggle.addEventListener("click",()=>{running=!running;ui.toggle.textContent=running?"Παύση":"Συνέχεια"});
-ui.step.addEventListener("click",()=>{running=false;ui.toggle.textContent="Συνέχεια";step();frame++;updateReadout();draw()});
-ui.reset.addEventListener("click",()=>{reset();running=true;ui.toggle.textContent="Παύση"});
+canvas.addEventListener("click",(ev)=>{
+  // Κλικ πάνω στη σκηνή = έναρξη/παύση, όπως στα βιβλιακά/interactive panels.
+  ev.preventDefault();
+  toggleRunning();
+});
+
+ui.toggle.addEventListener("click",()=>toggleRunning());
+ui.step.addEventListener("click",()=>{setRunningState(false);step();frame++;updateReadout();draw()});
+ui.reset.addEventListener("click",()=>{reset();setRunningState(true)});
 ui.snapshot.addEventListener("click",snapshot);
+
+ui.sceneButtons.addEventListener("click",(ev)=>{
+  const btn=ev.target.closest("[data-scene]");
+  if(!btn)return;
+  applyScene(btn.dataset.scene);
+});
+
+ui.togglePanel.addEventListener("click",()=>{viewOptions.panel=!viewOptions.panel;refreshToggleButtons();draw();updateBookUrlField();});
+ui.toggleThermometers.addEventListener("click",()=>{viewOptions.thermometers=!viewOptions.thermometers;refreshToggleButtons();draw();updateBookUrlField();});
+ui.toggleLegend.addEventListener("click",()=>{viewOptions.legend=!viewOptions.legend;refreshToggleButtons();draw();updateBookUrlField();});
+ui.toggleVelocity.addEventListener("click",()=>{viewOptions.velocity=!viewOptions.velocity;refreshToggleButtons();draw();updateBookUrlField();});
+ui.toggleEvents.addEventListener("click",()=>{viewOptions.events=!viewOptions.events;refreshToggleButtons();draw();updateBookUrlField();});
+ui.screenBtn?.addEventListener("click",()=>setThemeMode("screen"));
+ui.paperBtn?.addEventListener("click",()=>setThemeMode("paper"));
+ui.bookBtn?.addEventListener("click",()=>setBookMode(!bookMode));
+ui.hideBookUrl?.addEventListener("click",()=>ui.bookUrlBox?.classList.remove("show"));
+ui.copyBookLink?.addEventListener("click",async()=>{
+  updateBookUrlField();
+  ui.bookUrlBox?.classList.add("show");
+  try{await navigator.clipboard.writeText(ui.bookUrl.value);}catch(_){ui.bookUrl?.select();}
+});
+document.querySelectorAll(".regionSwitch [data-scene]").forEach(btn=>btn.addEventListener("click",()=>applyScene(btn.dataset.scene)));
+ui.langEl?.addEventListener("click",()=>{ui.langEl.classList.add("active");ui.langEn?.classList.remove("active");});
+ui.langEn?.addEventListener("click",()=>{ui.langEn.classList.add("active");ui.langEl?.classList.remove("active");});
+
 for(const el of [ui.mode,ui.temperature,ui.initialMolecules,ui.speed,ui.showCandidates,ui.systemMode,ui.envT]){
   el.addEventListener("input",()=>{updateControlLabels();});
   el.addEventListener("change",()=>{
+    activeSceneKey="custom";
+    refreshSceneButtons();
     if(el===ui.mode||el===ui.initialMolecules||el===ui.temperature||el===ui.systemMode)reset();
     else updateControlLabels();
   });
 }
 
-reset();
+refreshToggleButtons();
+applyScene("h2Closed");
+applyQueryState();
 tick();
 
 })();
