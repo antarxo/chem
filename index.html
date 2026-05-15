@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Μετροπόντικας Χημείας — v76 mouse pause + thermometers</title>
+<title>Μετροπόντικας Χημείας — v77 cleaned UI + meters</title>
 <style>
 :root{
   --bg:#0b0f14; --panel:#111822; --text:#e8eef7; --muted:#9aa8bc;
@@ -23,9 +23,9 @@ body[data-theme="paper"]{
 }
 .app{display:grid;grid-template-rows:auto 1fr;height:100dvh;min-height:100dvh;background:var(--bg)}
 .top{padding:6px 10px;background:var(--topBg);border-bottom:1px solid var(--cardBorder);display:flex;justify-content:center;align-items:center;z-index:10}
-.titleBar{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-width:0}
-.title{font-size:18px;font-weight:800;display:flex;align-items:baseline;justify-content:center;gap:10px;text-align:center;min-width:0;white-space:nowrap}
-.sub{color:var(--muted);font-size:11px;font-weight:600;white-space:nowrap}
+.titleBar{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-width:0}
+.title{font-size:22px;font-weight:850;display:flex;align-items:baseline;justify-content:center;gap:10px;text-align:center;min-width:0;white-space:nowrap;letter-spacing:.01em}
+.sub{color:var(--muted);font-size:11px;font-weight:650;white-space:nowrap}
 .langSwitch,.regionSwitch{display:flex;align-items:center;gap:4px;flex:0 0 auto}
 .langBtn,.regionBtn,.sceneBtn,button{border:1px solid rgba(255,255,255,.14);background:var(--buttonBg);color:var(--text);padding:4px 7px;border-radius:8px;cursor:pointer;font-size:11px;line-height:1.1;font-weight:700;box-shadow:none}
 body[data-theme="paper"] .langBtn,body[data-theme="paper"] .regionBtn,body[data-theme="paper"] .sceneBtn,body[data-theme="paper"] button{border-color:rgba(15,24,32,.18)}
@@ -49,9 +49,23 @@ body[data-theme="paper"] .readout{background:rgba(255,255,255,.80);border-color:
 body.book-mode .top, body.book-mode .chemHud, body.book-mode .bookUrl{display:none!important}body.book-mode .main{padding:0}body.book-mode .card.viewport{border:none;border-radius:0}body.book-mode .readout{right:8px;bottom:8px;width:min(460px,50vw);opacity:.86}body.book-mode #sim{border-radius:0}
 @media(max-width:980px){html,body{overflow:auto}.app{height:auto;min-height:100dvh}.main{height:82vh;min-height:620px}.chemHud{width:min(96vw,430px);left:6px;right:6px;bottom:6px}.readout{left:6px;right:6px;bottom:auto;top:6px;width:auto}.title{font-size:15px}.regionSwitch{display:none}}
 @media(max-width:640px){.main{height:88vh}.chemHud{width:auto}.hudGroup{gap:3px}.sceneBtn,button{font-size:10px;padding:4px 6px}.control{padding:2px 4px}input[type="range"]{width:64px}.readout{font-size:10.5px}.title{font-size:13px}.sub{display:none}}
+
+.bookTopBtn{margin-left:2px;padding:4px 10px;border-radius:9px;font-size:11px;align-self:center}
+.chemHud{gap:5px}
+.meterDeck{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;pointer-events:auto}
+.meterBox{border:1px solid rgba(255,255,255,.10);border-radius:10px;background:rgba(10,14,20,.46);backdrop-filter:blur(4px);padding:6px 7px;min-width:0}
+body[data-theme="paper"] .meterBox{background:rgba(255,255,255,.78);border-color:rgba(24,34,44,.16)}
+.meterBox .mini{display:block;color:var(--muted);font-size:9.5px;font-weight:800;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meterBox .val{display:block;color:var(--text);font-size:12px;font-weight:850;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.transportRow{display:grid;grid-template-columns:repeat(4,34px);gap:4px;align-items:center;justify-content:center;width:100%}
+.transportRow button{width:34px;height:30px;min-width:34px;padding:0;font-size:15px;line-height:1;border-radius:9px;display:flex;align-items:center;justify-content:center}
+.settingsGrid{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.displayGrid{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+body.clean-readout .readout{display:none}
+
 </style>
 </head>
-<body data-theme="screen">
+<body data-theme="screen" class="clean-readout">
 <div class="app">
   <div class="top">
     <div class="titleBar">
@@ -59,13 +73,11 @@ body.book-mode .top, body.book-mode .chemHud, body.book-mode .bookUrl{display:no
         <button id="langEl" class="langBtn active" type="button">EL</button>
         <button id="langEn" class="langBtn" type="button">EN</button>
       </div>
-      <div class="regionSwitch" aria-label="Scene selector">
-        <button class="regionBtn" data-scene="nascentH" type="button">Η εν τω γεννάσθαι</button>
-        <button class="regionBtn" data-scene="h2Closed" type="button">H⇄H₂</button>
-        <button class="regionBtn" data-scene="cl2Closed" type="button">Cl⇄Cl₂</button>
-        <button class="regionBtn" data-scene="mixHCl" type="button">HCl</button>
+      <div class="title">
+        <span>Μετροπόντικας της Χημείας</span>
+        <span class="sub">© antarxo, 2026</span>
+        <button id="bookBtn" class="bookTopBtn" type="button">Βιβλίο</button>
       </div>
-      <div class="title"><span>Μετροπόντικας της Χημείας</span><span class="sub">© antarxo, 2026</span></div>
     </div>
   </div>
   <div class="main">
@@ -74,59 +86,71 @@ body.book-mode .top, body.book-mode .chemHud, body.book-mode .bookUrl{display:no
       <div class="bookUrl" id="bookUrlBox"><span class="hudLabel">Παραπομπή</span><input id="bookUrl" readonly><button id="hideBookUrl" type="button">×</button></div>
 
       <div class="chemHud">
-        <div class="hudGroup compact">
-          <span class="hudLabel">Σκηνές</span>
-          <div class="sceneGroup" id="sceneButtons">
-            <button class="sceneBtn" data-scene="nascentH">Η εν τω γεννάσθαι</button>
-            <button class="sceneBtn" data-scene="h2Closed">H ⇄ H₂</button>
-            <button class="sceneBtn" data-scene="cl2Closed">Cl ⇄ Cl₂</button>
-            <button class="sceneBtn" data-scene="mixHCl">H₂ / Cl₂ / HCl</button>
-            <button class="sceneBtn" data-scene="hotBreak">Υψηλή T</button>
-            <button class="sceneBtn" data-scene="thermalWall">Περιβάλλον</button>
-          </div>
+        <div class="meterDeck" id="meterDeck">
+          <div class="meterBox"><span class="mini">Πληθυσμοί</span><span class="val" id="meterPop">—</span></div>
+          <div class="meterBox"><span class="mini">Ενέργεια</span><span class="val" id="meterEnergy">—</span></div>
+          <div class="meterBox"><span class="mini">Θερμοκρασία</span><span class="val" id="meterThermo">—</span></div>
+          <div class="meterBox"><span class="mini">Κρούσεις</span><span class="val" id="meterReaction">—</span></div>
         </div>
 
         <div class="hudGroup compact">
           <span class="hudLabel">Χειρισμός</span>
-          <button id="toggle">Παύση</button>
-          <button id="step">Βήμα</button>
-          <button id="reset">Reset</button>
-          <button id="snapshot">PNG</button>
-          <button id="screenBtn" class="themeBtn active">Οθόνη</button>
-          <button id="paperBtn" class="themeBtn">Χαρτί</button>
-          <button id="bookBtn">Βιβλίο</button>
-          <button id="copyBookLink">Παραπομπή</button>
+          <div class="transportRow">
+            <button id="reset" title="Επανεκκίνηση" aria-label="Επανεκκίνηση">⏮</button>
+            <button id="toggle" title="Έναρξη / Παύση" aria-label="Έναρξη / Παύση">❚❚</button>
+            <button id="step" title="Βήμα μπροστά" aria-label="Βήμα μπροστά">⏵</button>
+            <button id="snapshot" title="Στιγμιότυπο PNG" aria-label="Στιγμιότυπο PNG">▣</button>
+          </div>
+        </div>
+
+        <div class="hudGroup compact">
+          <span class="hudLabel">Λειτουργίες</span>
+          <div class="sceneGroup" id="sceneButtons">
+            <button class="sceneBtn" data-scene="nascentH">H*</button>
+            <button class="sceneBtn" data-scene="h2Closed">H⇄H₂</button>
+            <button class="sceneBtn" data-scene="cl2Closed">Cl⇄Cl₂</button>
+            <button class="sceneBtn" data-scene="mixHCl">HCl</button>
+            <button class="sceneBtn" data-scene="hotBreak">T↑</button>
+            <button class="sceneBtn" data-scene="thermalWall">περιβ.</button>
+          </div>
         </div>
 
         <div class="hudGroup compact">
           <span class="hudLabel">Ρυθμίσεις</span>
-          <span class="control"><label for="mode">μίγμα</label>
-            <select id="mode">
-              <option value="HH" selected>H ⇄ H₂</option>
-              <option value="ClCl">Cl ⇄ Cl₂</option>
-              <option value="Mix">H₂ / Cl₂ / HCl</option>
-            </select>
-          </span>
-          <span class="control"><label for="temperature">T αρχ.</label><input id="temperature" type="range" min="0.20" max="3.00" step="0.01" value="0.95"><span id="tempVal">0.95</span></span>
-          <span class="control"><label for="systemMode">σύστημα</label>
-            <select id="systemMode">
-              <option value="closed" selected>κλειστό</option>
-              <option value="thermal">περιβάλλον</option>
-            </select>
-          </span>
-          <span class="control"><label for="envT">T περ.</label><input id="envT" type="range" min="0.20" max="3.00" step="0.01" value="0.95"><span id="envVal">0.95</span></span>
-          <span class="control"><label for="initialMolecules">μόρια</label><input id="initialMolecules" type="range" min="0" max="100" step="5" value="55"><span id="molVal">55%</span></span>
-          <span class="control"><label for="speed">ταχ.</label><input id="speed" type="range" min="1" max="280" step="1" value="72"><span id="speedVal">72</span></span>
-          <span class="control"><label><input id="showCandidates" type="checkbox" checked> υποψ.</label></span>
+          <div class="settingsGrid">
+            <span class="control"><label for="mode">μίγμα</label>
+              <select id="mode">
+                <option value="HH" selected>H ⇄ H₂</option>
+                <option value="ClCl">Cl ⇄ Cl₂</option>
+                <option value="Mix">H₂ / Cl₂ / HCl</option>
+              </select>
+            </span>
+            <span class="control"><label for="temperature">T αρχ.</label><input id="temperature" type="range" min="0.20" max="3.00" step="0.01" value="0.95"><span id="tempVal">0.95</span></span>
+            <span class="control"><label for="systemMode">σύστημα</label>
+              <select id="systemMode">
+                <option value="closed" selected>κλειστό</option>
+                <option value="thermal">περιβάλλον</option>
+              </select>
+            </span>
+            <span class="control"><label for="envT">T περ.</label><input id="envT" type="range" min="0.20" max="3.00" step="0.01" value="0.95"><span id="envVal">0.95</span></span>
+            <span class="control"><label for="initialMolecules">μόρια</label><input id="initialMolecules" type="range" min="0" max="100" step="5" value="55"><span id="molVal">55%</span></span>
+            <span class="control"><label for="speed">ταχ.</label><input id="speed" type="range" min="1" max="280" step="1" value="72"><span id="speedVal">72</span></span>
+            <span class="control"><label><input id="showCandidates" type="checkbox" checked> υποψ.</label></span>
+          </div>
         </div>
 
         <div class="hudGroup compact">
-          <span class="hudLabel">Εμφάνιση</span>
-          <button class="sceneBtn toggleBtn active" id="togglePanel">ταμείο</button>
-          <button class="sceneBtn toggleBtn active" id="toggleThermometers">θερμόμετρα</button>
-          <button class="sceneBtn toggleBtn active" id="toggleLegend">κλίμακες</button>
-          <button class="sceneBtn toggleBtn active" id="toggleVelocity">ταχύτητες</button>
-          <button class="sceneBtn toggleBtn active" id="toggleEvents">συμβάντα</button>
+          <span class="hudLabel">Οθόνη / χαρτί</span>
+          <div class="displayGrid">
+            <button id="screenBtn" class="themeBtn active">Οθόνη</button>
+            <button id="paperBtn" class="themeBtn">Χαρτί</button>
+            <button id="copyBookLink">Παραπομπή</button>
+            <button class="sceneBtn toggleBtn active" id="togglePanel">ταμείο</button>
+            <button class="sceneBtn toggleBtn active" id="toggleThermometers">θερμόμ.</button>
+            <button class="sceneBtn toggleBtn active" id="toggleLegend">κλίμακες</button>
+            <button class="sceneBtn toggleBtn active" id="toggleVelocity">ταχύτ.</button>
+            <button class="sceneBtn toggleBtn active" id="toggleEvents">συμβάντα</button>
+          </div>
         </div>
       </div>
 
@@ -134,7 +158,7 @@ body.book-mode .top, body.book-mode .chemHud, body.book-mode .bookUrl{display:no
     </div>
   </div>
 </div>
-<div class="note"><span class="badge">v76</span> Περιβάλλον τύπου ΗΜ κύματος με click για έναρξη/παύση, θερμόμετρα Tsys/Tenv και πρόχειρη αντιστοίχιση θερμοκρασίας σε Kelvin υπό βαθμονόμηση.</div>
+<div class="note"><span class="badge">v77</span> Καθαρισμένη διάταξη οθόνης: τίτλος τύπου ΗΜ κύματος, book button στη γραμμή τίτλου, transport controls, meters πάνω από το πάνελ και θερμόμετρα στο/δίπλα στο δοχείο.</div>
 
 <script>
 (() => {
@@ -174,6 +198,10 @@ const ui={
   toggleVelocity:document.getElementById("toggleVelocity"),
   toggleEvents:document.getElementById("toggleEvents"),
   sceneButtons:document.getElementById("sceneButtons"),
+  meterPop:document.getElementById("meterPop"),
+  meterEnergy:document.getElementById("meterEnergy"),
+  meterThermo:document.getElementById("meterThermo"),
+  meterReaction:document.getElementById("meterReaction"),
   readout:document.getElementById("readout")
 };
 
@@ -970,57 +998,58 @@ function drawContainer(){
 
   ctx.font="14px system-ui, sans-serif";
   ctx.fillStyle=th.text;
-  ctx.fillText(`${activeMode().title} — v76: click παύση + θερμόμετρα`,70,48);
+  ctx.fillText(`${activeMode().title} — v77: καθαρό περιβάλλον + μετρητές`,70,48);
   ctx.fillStyle=th.muted;
-  ctx.fillText("click στη σκηνή: έναρξη/παύση • θερμόμετρα • Οθόνη/Χαρτί • K/Ubond/Esys/Qwall",70,70);
+  ctx.fillText("click: έναρξη/παύση • θερμόμετρα: επιλογή κλειστού/περιβάλλοντος • μετρητές πάνω από HUD",70,70);
 }
 
+let thermoHitAreas=[];
+
 function drawThermometers(){
-  const th=theme();
   const Tsys=gasTemperature();
   const Tenv=Number(ui.envT.value);
   const thermalMode=ui.systemMode.value==="thermal";
 
-  const x=W-340;
-  const y=230;
-  const w=268;
-  const h=164;
+  const xBox=view.cx-box.w*view.scale/2;
+  const yBox=view.cy-box.h*view.scale/2;
+  const wBox=box.w*view.scale;
 
-  ctx.fillStyle=th.panelBg;
-  ctx.strokeStyle=th.panelStroke;
-  ctx.lineWidth=1;
-  roundedRect(x,y,w,h,13,true,true);
+  thermoHitAreas=[];
 
-  ctx.font="bold 13px system-ui, sans-serif";
-  ctx.fillStyle=th.panelText;
-  ctx.fillText("Θερμόμετρα",x+13,y+21);
+  // Σύστημα: πάνω δεξιά μέσα στο δοχείο.
+  drawOneThermometer(xBox+wBox-58,yBox+30,Tsys,"σύστημα",true,"closed");
 
-  ctx.font="10.5px system-ui, sans-serif";
-  ctx.fillStyle=th.panelMuted;
-  ctx.fillText("K ≈ 1000·Tmodel — προσωρινή βαθμονόμηση",x+13,y+38);
-
-  drawOneThermometer(x+42,y+62,Tsys,"σύστημα",true);
-  drawOneThermometer(x+154,y+62,Tenv,thermalMode ? "περιβάλλον" : "T αναφοράς",thermalMode);
+  // Περιβάλλον: λίγο έξω δεξιά από το δοχείο.
+  drawOneThermometer(xBox+wBox+24,yBox+30,Tenv,"περιβάλλον",thermalMode,"thermal");
 }
 
-function drawOneThermometer(x,y,T,label,active=true){
+function drawOneThermometer(x,y,T,label,active=true,role="closed"){
   const th=theme();
-  const tubeH=76;
-  const tubeW=16;
-  const bulbR=13;
+  const tubeH=54;
+  const tubeW=11;
+  const bulbR=9;
   const Tmin=0.20;
   const Tmax=3.00;
   const fill=clamp((T-Tmin)/(Tmax-Tmin),0,1);
   const mercuryH=tubeH*fill;
-  const alpha=active?1:0.48;
+  const alpha=active?1:0.58;
+
+  const hit={role,x:x-18,y:y-28,w:74,h:tubeH+58};
+  thermoHitAreas.push(hit);
 
   ctx.save();
   ctx.globalAlpha=alpha;
 
+  // μικρό γυάλινο πλακίδιο για να διαβάζεται πάνω στο δοχείο
+  ctx.fillStyle=themeMode==="paper" ? "rgba(255,255,255,0.72)" : "rgba(10,14,20,0.34)";
+  ctx.strokeStyle=role==="thermal" && ui.systemMode.value==="thermal" ? "rgba(245,158,11,0.70)" : (themeMode==="paper" ? "rgba(24,34,44,0.20)" : "rgba(255,255,255,0.12)");
+  ctx.lineWidth=1;
+  roundedRect(hit.x,hit.y,hit.w,hit.h,11,true,true);
+
   ctx.strokeStyle=themeMode==="paper" ? "rgba(24,34,44,0.66)" : "rgba(232,238,247,0.66)";
-  ctx.lineWidth=2;
+  ctx.lineWidth=1.8;
   ctx.beginPath();
-  ctx.roundRect(x,y,tubeW,tubeH,8);
+  ctx.roundRect(x,y,tubeW,tubeH,7);
   ctx.stroke();
 
   ctx.beginPath();
@@ -1034,35 +1063,42 @@ function drawOneThermometer(x,y,T,label,active=true){
   ctx.fillStyle=grad;
 
   ctx.beginPath();
-  ctx.roundRect(x+3,y+tubeH-mercuryH,tubeW-6,mercuryH,5);
+  ctx.roundRect(x+2.5,y+tubeH-mercuryH,tubeW-5,mercuryH,5);
   ctx.fill();
 
   ctx.beginPath();
-  ctx.arc(x+tubeW/2,y+tubeH+bulbR-2,bulbR-4,0,Math.PI*2);
+  ctx.arc(x+tubeW/2,y+tubeH+bulbR-2,bulbR-3.5,0,Math.PI*2);
   ctx.fill();
-
-  ctx.strokeStyle=themeMode==="paper" ? "rgba(66,80,92,0.44)" : "rgba(154,168,188,0.48)";
-  ctx.lineWidth=1;
-  for(let i=0;i<=4;i++){
-    const yy=y+tubeH-i*tubeH/4;
-    ctx.beginPath();
-    ctx.moveTo(x+tubeW+4,yy);
-    ctx.lineTo(x+tubeW+12,yy);
-    ctx.stroke();
-  }
-
-  ctx.font="11px system-ui, sans-serif";
-  ctx.fillStyle=th.panelMuted;
-  ctx.fillText(label,x-14,y+tubeH+33);
-
-  ctx.font="bold 12px system-ui, sans-serif";
-  ctx.fillStyle=th.panelText;
-  ctx.fillText(T.toFixed(2),x-6,y-9);
 
   ctx.font="10px system-ui, sans-serif";
   ctx.fillStyle=th.panelMuted;
-  ctx.fillText("≈"+Math.round(modelTempToKelvin(T))+" K",x-14,y-22);
+  ctx.fillText(label,x-12,y+tubeH+25);
+
+  ctx.font="bold 11px system-ui, sans-serif";
+  ctx.fillStyle=th.panelText;
+  ctx.fillText(T.toFixed(2),x-8,y-8);
+
+  ctx.font="9px system-ui, sans-serif";
+  ctx.fillStyle=th.panelMuted;
+  ctx.fillText("≈"+Math.round(modelTempToKelvin(T))+"K",x-13,y-20);
+
   ctx.restore();
+}
+
+function thermoHitTest(px,py){
+  for(const h of thermoHitAreas){
+    if(px>=h.x && px<=h.x+h.w && py>=h.y && py<=h.y+h.h)return h.role;
+  }
+  return null;
+}
+
+function selectSystemModeFromThermometer(role){
+  if(role!=="closed" && role!=="thermal")return false;
+  ui.systemMode.value=role;
+  activeSceneKey="custom";
+  refreshSceneButtons();
+  reset();
+  return true;
 }
 
 function drawLegend(){
@@ -1072,7 +1108,7 @@ function drawLegend(){
   ctx.strokeStyle=th.panelStroke;
   roundedRect(x,y,w,h,13,true,true);
   ctx.font="bold 13px system-ui, sans-serif";ctx.fillStyle=th.panelText;
-  ctx.fillText("Κλίμακες v76",x+13,y+21);
+  ctx.fillText("Κλίμακες v77",x+13,y+21);
   ctx.font="12px system-ui, sans-serif";ctx.fillStyle=th.panelMuted;
   ctx.fillText("H: μικρό νέφος, πιο καθαρό χρώμα",x+13,y+44);
   ctx.fillText("Cl: μεγαλύτερο νέφος, ίδια κλίμακα",x+13,y+63);
@@ -1164,9 +1200,22 @@ function updateControlLabels(){
   ui.molVal.textContent=`${ui.initialMolecules.value}%`;
   ui.speedVal.textContent=ui.speed.value;
 }
+function updateHtmlMeters(c,T,en,dr){
+  const thermal = ui.systemMode.value==="thermal";
+  if(ui.meterPop) ui.meterPop.textContent=`H:${c.freeH} Cl:${c.freeCl} H₂:${c.H2} Cl₂:${c.Cl2} HCl:${c.HCl} *:${c.stars}`;
+  if(ui.meterEnergy) ui.meterEnergy.textContent=thermal
+    ? `Esys:${en.E.toFixed(1)} Q:${Qwall.toFixed(1)}`
+    : `Esys:${en.E.toFixed(1)} ΔE:${dr.closed.toFixed(2)}%`;
+  if(ui.meterThermo) ui.meterThermo.textContent=thermal
+    ? `Tsys:${T.toFixed(2)} / Tenv:${Number(ui.envT.value).toFixed(2)}`
+    : `Tsys:${T.toFixed(2)} ≈${Math.round(modelTempToKelvin(T))}K`;
+  if(ui.meterReaction) ui.meterReaction.textContent=`κρ:${stats.collisions} υποψ:${stats.candidates} σχ:${stats.formed} σπ:${stats.broken}`;
+}
+
 function updateReadout(){
   updateControlLabels();
   const c=counts(),T=gasTemperature(),en=totalEnergy(),dr=energyDrift();
+  updateHtmlMeters(c,T,en,dr);
   const audit = ui.systemMode.value==="closed"
     ? `κλειστό ΔE:${dr.closed.toFixed(2)}%`
     : `περιβάλλον Tenv:${Number(ui.envT.value).toFixed(2)} Qwall:${Qwall.toFixed(1)} Δ(E-Q):${dr.thermal.toFixed(2)}%`;
@@ -1189,7 +1238,9 @@ function tick(){
 
 function setRunningState(on){
   running=!!on;
-  ui.toggle.textContent=running?"Παύση":"Συνέχεια";
+  ui.toggle.textContent=running?"❚❚":"▶";
+  ui.toggle.title=running?"Παύση":"Συνέχεια";
+  ui.toggle.setAttribute("aria-label",running?"Παύση":"Συνέχεια");
 }
 function toggleRunning(){
   setRunningState(!running);
@@ -1197,7 +1248,7 @@ function toggleRunning(){
 
 function snapshot(){
   const a=document.createElement("a");
-  a.download="metropontikas_H_Cl_HCl_v76_mouse_pause_thermometers.png";
+  a.download="metropontikas_H_Cl_HCl_v77_cleaned_ui_meters.png";
   a.href=canvas.toDataURL("image/png");
   a.click();
 }
@@ -1208,10 +1259,31 @@ canvas.addEventListener("wheel",(ev)=>{
   view.scale=clamp(view.scale*factor,1.10,2.75);
 },{passive:false});
 
+function canvasPointFromEvent(ev){
+  const rect=canvas.getBoundingClientRect();
+  return {
+    x:(ev.clientX-rect.left)*canvas.width/Math.max(1,rect.width),
+    y:(ev.clientY-rect.top)*canvas.height/Math.max(1,rect.height)
+  };
+}
+
 canvas.addEventListener("click",(ev)=>{
-  // Κλικ πάνω στη σκηνή = έναρξη/παύση, όπως στα βιβλιακά/interactive panels.
   ev.preventDefault();
+  const p=canvasPointFromEvent(ev);
+  const thermoRole=thermoHitTest(p.x,p.y);
+  if(thermoRole){
+    selectSystemModeFromThermometer(thermoRole);
+    return;
+  }
+  // Κλικ πάνω στη σκηνή = έναρξη/παύση.
   toggleRunning();
+});
+
+canvas.addEventListener("mousemove",(ev)=>{
+  const p=canvasPointFromEvent(ev);
+  const thermoRole=thermoHitTest(p.x,p.y);
+  canvas.style.cursor=thermoRole ? "pointer" : "pointer";
+  canvas.title=thermoRole==="closed" ? "Κλικ: κλειστό σύστημα" : (thermoRole==="thermal" ? "Κλικ: σύστημα με περιβάλλον" : "Κλικ: έναρξη/παύση");
 });
 
 ui.toggle.addEventListener("click",()=>toggleRunning());
@@ -1239,7 +1311,6 @@ ui.copyBookLink?.addEventListener("click",async()=>{
   ui.bookUrlBox?.classList.add("show");
   try{await navigator.clipboard.writeText(ui.bookUrl.value);}catch(_){ui.bookUrl?.select();}
 });
-document.querySelectorAll(".regionSwitch [data-scene]").forEach(btn=>btn.addEventListener("click",()=>applyScene(btn.dataset.scene)));
 ui.langEl?.addEventListener("click",()=>{ui.langEl.classList.add("active");ui.langEn?.classList.remove("active");});
 ui.langEn?.addEventListener("click",()=>{ui.langEn.classList.add("active");ui.langEl?.classList.remove("active");});
 
